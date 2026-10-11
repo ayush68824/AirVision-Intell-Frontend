@@ -5,7 +5,7 @@
   "author": "ayush68824",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ayush68824/AirVision-Frontend.git"
+    "url": "https://github.com/ayush68824/AirVision-Intell-Frontend.git"
   },
   "scripts": {
     "dev": "next dev",

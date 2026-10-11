@@ -23,7 +23,7 @@ Repository: [ayush68824/AirVision-Frontend](https://github.com/ayush68824/AirVis
 ## Requirements
 
 - Node.js 20+
-- Running AirVision API (default `http://127.0.0.1:8000`)
+- Running AirVision API (default `https://airviision-intell-backend.onrender.com`)
 
 ## Setup
 
@@ -35,7 +35,7 @@ npm run dev
 
 Open [http://127.0.0.1:3000](http://127.0.0.1:3000).
 
-Set `NEXT_PUBLIC_API_URL` in `.env.local` if the API is not on `127.0.0.1:8000`.
+Set `NEXT_PUBLIC_API_URL` in `.env.local` to override the default production API URL.
 
 ## Scripts
 
