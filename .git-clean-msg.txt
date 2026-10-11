@@ -1,0 +1,3 @@
+Initial commit: AirVision frontend application.
+
+Next.js app with dashboard, route lab, decision workspace, and operations views.

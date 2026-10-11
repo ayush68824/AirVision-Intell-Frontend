@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { FormEvent, useState } from "react";
 import AppShell from "@/components/AppShell";
-import { CP, INDIA_GATE, optimizeRoutes } from "@/lib/api";
+import { CP, INDIA_GATE, optimizeRoutes, RouteResponse } from "@/lib/api";
 
 const RouteMap = dynamic(() => import("@/components/RouteMap"), { ssr: false });
 
@@ -11,7 +11,7 @@ export default function RoutesPage() {
   const [mode, setMode] = useState("walk");
   const [departureLocal, setDepartureLocal] = useState("");
   const [selectedId, setSelectedId] = useState<string>();
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<RouteResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -30,8 +30,8 @@ export default function RoutesPage() {
       });
       setResult(data);
       setSelectedId(data.recommendation_id);
-    } catch (err: any) {
-      setError(err.message || "Routing failed");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Routing failed");
     } finally {
       setLoading(false);
     }
@@ -97,7 +97,7 @@ export default function RoutesPage() {
             </p>
           )}
           <div style={{ display: "grid", gap: 8 }}>
-            {options.map((o: any) => (
+            {options.map((o) => (
               <button
                 key={o.id}
                 type="button"
@@ -128,13 +128,16 @@ export default function RoutesPage() {
                 type="range"
                 min={0}
                 max={Math.max(comps.length - 1, 0)}
-                defaultValue={comps.findIndex((c: any) => c.offset_minutes === 0)}
+                defaultValue={Math.max(
+                  0,
+                  comps.findIndex((c) => c.offset_minutes === 0)
+                )}
                 onChange={() => {}}
                 style={{ width: "100%" }}
                 list="offsets"
               />
               <ul style={{ paddingLeft: "1.1rem" }}>
-                {comps.map((c: any) => (
+                {comps.map((c) => (
                   <li key={c.offset_minutes}>
                     offset {c.offset_minutes} min → dose {c.inhaled_dose_ug} ug · PM2.5 {c.mean_pm25}
                   </li>

@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from "react";
 import AppShell from "@/components/AppShell";
-import { CP, getForecast } from "@/lib/api";
+import { CP, ForecastResponse, getForecast } from "@/lib/api";
 
 export default function ForecastsPage() {
-  const [forecast, setForecast] = useState<any>(null);
+  const [forecast, setForecast] = useState<ForecastResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     getForecast(CP, [1, 6, 12, 24])
       .then(setForecast)
-      .catch((e) => setError(e.message));
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : "Forecast failed"));
   }, []);
 
   const meta = forecast?.data_freshness || {};
@@ -60,7 +60,7 @@ export default function ForecastsPage() {
             </tr>
           </thead>
           <tbody>
-            {(forecast?.horizons || []).map((h: any) => (
+            {(forecast?.horizons || []).map((h) => (
               <tr key={h.horizon_hours} style={{ borderBottom: "1px solid var(--line)" }}>
                 <td style={{ padding: 8 }}>{h.horizon_hours}h</td>
                 <td>{h.pm25_mean}</td>

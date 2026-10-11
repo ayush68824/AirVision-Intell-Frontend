@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import AppShell from "@/components/AppShell";
-import { CP, INDIA_GATE, simulateDeparture } from "@/lib/api";
+import { CP, INDIA_GATE, simulateDeparture, SimulationResponse } from "@/lib/api";
 
 export default function SimulationPage() {
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<SimulationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [pmShock, setPmShock] = useState(0);
@@ -25,8 +25,8 @@ export default function SimulationPage() {
         mode: "walk",
       });
       setResult(data);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Simulation failed");
     } finally {
       setLoading(false);
     }
@@ -76,7 +76,7 @@ export default function SimulationPage() {
               </tr>
             </thead>
             <tbody>
-              {(result.scenarios || []).map((s: any) => (
+              {(result.scenarios || []).map((s) => (
                 <tr key={s.offset_minutes} style={{ borderBottom: "1px solid var(--line)" }}>
                   <td style={{ padding: 8 }}>{s.offset_minutes} min</td>
                   <td>{s.recommendation_id}</td>

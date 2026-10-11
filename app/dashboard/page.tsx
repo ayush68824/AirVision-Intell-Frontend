@@ -3,13 +3,13 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import AppShell from "@/components/AppShell";
-import { CP, getForecast, INDIA_GATE, latestAqi } from "@/lib/api";
+import { AqiReading, CP, ForecastResponse, getForecast, INDIA_GATE, latestAqi } from "@/lib/api";
 
 const RouteMap = dynamic(() => import("@/components/RouteMap"), { ssr: false });
 
 export default function DashboardPage() {
-  const [aqi, setAqi] = useState<any[]>([]);
-  const [forecast, setForecast] = useState<any>(null);
+  const [aqi, setAqi] = useState<AqiReading[]>([]);
+  const [forecast, setForecast] = useState<ForecastResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -18,8 +18,8 @@ export default function DashboardPage() {
         const [stations, fc] = await Promise.all([latestAqi("Delhi"), getForecast(CP)]);
         setAqi(stations);
         setForecast(fc);
-      } catch (e: any) {
-        setError(e.message || "Failed to load command center");
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "Failed to load command center");
       }
     })();
   }, []);
@@ -70,7 +70,7 @@ export default function DashboardPage() {
               lat: s.location.lat,
               lng: s.location.lng,
               name: s.station_name,
-              pm25: s.pm25,
+              pm25: s.pm25 ?? undefined,
             }))}
           />
         </div>
@@ -80,7 +80,7 @@ export default function DashboardPage() {
             Prediction intervals — not facts. Hotspots below use station ranking (higher PM2.5 first).
           </p>
           <div style={{ display: "grid", gap: 8 }}>
-            {(forecast?.horizons || []).map((h: any) => (
+            {(forecast?.horizons || []).map((h) => (
               <div key={h.horizon_hours} style={{ background: "rgba(15,61,76,0.05)", borderRadius: 10, padding: "0.65rem" }}>
                 <strong>{h.horizon_hours}h</strong> · {h.pm25_mean} ug/m3 · AQI~{h.aqi_estimate} · {h.category}
                 <div className="muted" style={{ fontSize: "0.8rem" }}>

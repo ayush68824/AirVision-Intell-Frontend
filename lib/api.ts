@@ -2,17 +2,113 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 export type LatLng = { lat: number; lng: number };
 
+export type RouteMetrics = {
+  distance_m: number;
+  duration_min: number;
+  mean_pm25: number;
+  peak_pm25: number;
+  inhaled_dose_ug: number;
+  exposure_score: number;
+  pm25_p10?: number;
+  pm25_p90?: number;
+  ventilation_m3_per_min?: number;
+  dose_formula?: string;
+};
+
+export type RouteOption = {
+  id: string;
+  label: string;
+  geometry: LatLng[];
+  metrics: RouteMetrics;
+  rationale: string;
+  path_nodes?: number;
+  is_duplicate_geometry?: boolean;
+};
+
+export type RouteResponse = {
+  origin: LatLng;
+  destination: LatLng;
+  mode: string;
+  options: RouteOption[];
+  recommendation_id: string;
+  leave_earlier_suggestion?: {
+    recommended_offset_minutes?: number;
+    reason?: string;
+    comparisons?: Array<{
+      offset_minutes: number;
+      departure_at?: string;
+      mean_pm25?: number;
+      inhaled_dose_ug?: number;
+      duration_min?: number;
+      route_id?: string;
+    }>;
+  } | null;
+  exposure_assumptions?: {
+    formula?: string;
+    ventilation_m3_per_min?: number;
+    ambient_unit?: string;
+    dose_unit?: string;
+    speed_m_per_min?: number;
+    caveat?: string;
+  };
+  alternatives_distinct?: boolean;
+  identity_note?: string;
+  data_mode?: string;
+  departure_at?: string;
+  base_pm25?: number;
+  medical_disclaimer?: string;
+};
+
+export type ForecastHorizon = {
+  horizon_hours: number;
+  target_at?: string;
+  pm25_mean: number;
+  pm25_p10: number;
+  pm25_p90: number;
+  aqi_estimate: number;
+  category: string;
+  uncertainty_note?: string;
+};
+
+export type ForecastResponse = {
+  model_name: string;
+  model_version: string;
+  location: LatLng;
+  generated_at?: string;
+  horizons: ForecastHorizon[];
+  data_freshness?: {
+    stations?: number;
+    sources?: string[];
+    latest_observed_at?: string;
+    quality_ok?: boolean;
+    interpolation?: { method?: string; pm25?: number; stations_used?: number };
+  };
+};
+
+export type AqiReading = {
+  station_id: string;
+  station_name: string;
+  location: LatLng;
+  city: string;
+  pm25?: number | null;
+  pm10?: number | null;
+  aqi?: number | null;
+  source: string;
+  observed_at: string;
+  quality_flags?: Record<string, unknown>;
+};
+
 export type AgentResponse = {
   session_id: string;
   answer: string;
   plan: string[];
-  forecast?: any;
-  routes?: any;
-  citations?: any[];
-  simulation?: any;
-  vision?: any;
-  safety?: any;
-  evidence?: any;
+  forecast?: ForecastResponse;
+  routes?: RouteResponse;
+  citations?: Array<{ title: string; source: string; url?: string; snippet?: string; relevance?: number }>;
+  simulation?: Record<string, unknown>;
+  vision?: Record<string, unknown>;
+  safety?: { passed?: boolean; flags?: string[] };
+  evidence?: Record<string, unknown>;
   latency_ms: number;
   model_used: string;
   demo_mode?: boolean;
@@ -85,7 +181,7 @@ export async function agentQuery(payload: {
 }
 
 export async function getForecast(location: LatLng, horizons = [1, 6, 12, 24]) {
-  return request("/api/v1/forecast", {
+  return request<ForecastResponse>("/api/v1/forecast", {
     method: "POST",
     body: JSON.stringify({ location, horizons_hours: horizons, city: "Delhi" }),
   });
@@ -98,7 +194,7 @@ export async function optimizeRoutes(payload: {
   departure_at?: string;
   health_profile?: { conditions: string[]; sensitivity: string };
 }) {
-  return request("/api/v1/routes/optimize", {
+  return request<RouteResponse>("/api/v1/routes/optimize", {
     method: "POST",
     body: JSON.stringify({
       mode: "walk",
@@ -108,8 +204,27 @@ export async function optimizeRoutes(payload: {
 }
 
 export async function latestAqi(city = "Delhi") {
-  return request<any[]>(`/api/v1/aqi/latest?city=${encodeURIComponent(city)}`);
+  return request<AqiReading[]>(`/api/v1/aqi/latest?city=${encodeURIComponent(city)}`);
 }
+
+export type SimulationScenario = {
+  offset_minutes: number;
+  departure_at?: string;
+  recommendation_id?: string;
+  duration_min?: number;
+  mean_pm25?: number;
+  inhaled_dose_ug: number;
+  exposure_score?: number;
+  by_route?: Record<string, { inhaled_dose_ug?: number; mean_pm25?: number; duration_min?: number }>;
+  alternatives_distinct?: boolean;
+};
+
+export type SimulationResponse = {
+  scenarios?: SimulationScenario[];
+  best_offset_minutes?: number;
+  recommendation?: string;
+  assumptions?: string;
+};
 
 export async function simulateDeparture(payload: {
   origin: LatLng;
@@ -118,7 +233,7 @@ export async function simulateDeparture(payload: {
   offsets_minutes?: number[];
   mode?: string;
 }) {
-  return request("/api/v1/agent/simulate", {
+  return request<SimulationResponse>("/api/v1/agent/simulate", {
     method: "POST",
     body: JSON.stringify(payload),
   });

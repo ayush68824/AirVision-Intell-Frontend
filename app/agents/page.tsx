@@ -23,8 +23,8 @@ export default function AgentsPage() {
         health_profile: { conditions: ["asthma"], sensitivity: "high" },
       });
       setResult(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Agent run failed");
     } finally {
       setLoading(false);
     }
@@ -79,7 +79,7 @@ export default function AgentsPage() {
           <div className="panel" style={{ padding: "1rem" }}>
             <h2 style={{ marginTop: 0, fontFamily: "var(--font-display)" }}>Retrieved evidence</h2>
             <ul>
-              {(result.citations || []).map((c: any) => (
+              {(result.citations || []).map((c) => (
                 <li key={c.title}>
                   {c.title} ({c.source}) — relevance {c.relevance}
                 </li>

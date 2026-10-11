@@ -39,8 +39,8 @@ export default function ConsolePage() {
       });
       setResult(data);
       setSelectedId(data.routes?.recommendation_id);
-    } catch (err: any) {
-      setError(err.message || "Request failed");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Request failed");
     } finally {
       setLoading(false);
     }
@@ -129,7 +129,7 @@ export default function ConsolePage() {
               <p style={{ color: "#b42318", fontSize: "0.9rem" }}>{result.routes.identity_note}</p>
             )}
             <div style={{ display: "grid", gap: "0.55rem" }}>
-              {options.map((o: any) => (
+              {options.map((o) => (
                 <button
                   key={o.id}
                   type="button"
@@ -195,7 +195,7 @@ export default function ConsolePage() {
               <div>
                 <strong>Forecast (predicted)</strong>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6, marginTop: 6 }}>
-                  {horizons.map((h: any) => (
+                  {horizons.map((h) => (
                     <div
                       key={h.horizon_hours}
                       style={{
@@ -234,7 +234,7 @@ export default function ConsolePage() {
                 <div>
                   <strong>Citations (retrieved)</strong>
                   <ul style={{ margin: "0.35rem 0 0", paddingLeft: "1.1rem", fontSize: "0.85rem" }}>
-                    {result.citations.map((c: any) => (
+                    {result.citations.map((c) => (
                       <li key={c.title}>
                         {c.title} — {c.source}
                       </li>

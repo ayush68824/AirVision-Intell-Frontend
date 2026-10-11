@@ -4,14 +4,21 @@ import { useEffect, useState } from "react";
 import AppShell from "@/components/AppShell";
 import { getApiUrl, getHealth } from "@/lib/api";
 
+type HealthStatus = {
+  status: string;
+  version: string;
+  llm_configured: boolean;
+  services: Record<string, string>;
+};
+
 export default function OperationsPage() {
-  const [health, setHealth] = useState<any>(null);
+  const [health, setHealth] = useState<HealthStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     getHealth()
       .then(setHealth)
-      .catch((e) => setError(e.message));
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : "Health check failed"));
   }, []);
 
   return (
